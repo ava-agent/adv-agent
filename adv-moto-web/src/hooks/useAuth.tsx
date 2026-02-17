@@ -9,18 +9,17 @@ import { useState, useEffect, useCallback, createContext, useContext } from 'rea
 import type { User } from '../types'
 import { DataService } from '../services/dataService'
 import {
-  signInAnonymously,
-  signInWithWeChat,
-  signOut,
-  isCloudBaseConfigured
-} from '../services/cloudBase'
+  isSupabaseConfigured,
+  signInAnonymouslySupabase,
+  signOutSupabase
+} from '../services/supabaseService'
 
 interface AuthState {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
   error: string | null
-  isCloudBaseEnabled: boolean
+  isSupabaseEnabled: boolean
 }
 
 interface AuthContextType extends AuthState {
@@ -46,20 +45,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: false,
     isLoading: true,
     error: null,
-    isCloudBaseEnabled: false
+    isSupabaseEnabled: false
   })
 
   // Initialize auth on mount
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Initialize data service
         await DataService.initialize()
-
-        // Check if CloudBase is configured
-        const cloudBaseEnabled = isCloudBaseConfigured()
-
-        // Try to get current user
+        const supabaseEnabled = isSupabaseConfigured()
         const user = await DataService.getCurrentUser()
 
         setState({
@@ -67,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isAuthenticated: !!user,
           isLoading: false,
           error: null,
-          isCloudBaseEnabled: cloudBaseEnabled
+          isSupabaseEnabled: supabaseEnabled
         })
       } catch (error: unknown) {
         console.error('Auth initialization failed:', error)
@@ -89,15 +83,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setState(prev => ({ ...prev, isLoading: true, error: null }))
 
     try {
-      if (isCloudBaseConfigured()) {
-        // Try WeChat login first (for mini-program)
-        try {
-          await signInWithWeChat()
-        } catch {
-          // Fallback to anonymous login
-          await signInAnonymously()
-        }
-
+      if (isSupabaseConfigured()) {
+        await signInAnonymouslySupabase()
         const user = await DataService.getCurrentUser()
 
         setState({
@@ -105,13 +92,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isAuthenticated: !!user,
           isLoading: false,
           error: null,
-          isCloudBaseEnabled: true
+          isSupabaseEnabled: true
         })
       } else {
-        // Create a guest user for local mode
+        // Guest mode when no backend configured
         const guestUser: User = {
           id: 'guest',
-          nickname: 'Guest User',
+          nickname: '游客',
           avatarUrl: '',
           garage: [],
           isPremium: false,
@@ -123,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isAuthenticated: true,
           isLoading: false,
           error: null,
-          isCloudBaseEnabled: false
+          isSupabaseEnabled: false
         })
       }
     } catch (error: unknown) {
@@ -143,11 +130,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setState(prev => ({ ...prev, isLoading: true }))
 
     try {
-      if (isCloudBaseConfigured()) {
-        await signOut()
+      if (isSupabaseConfigured()) {
+        await signOutSupabase()
       }
 
-      // Clear local data
       localStorage.clear()
 
       setState({
@@ -155,7 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: false,
         isLoading: false,
         error: null,
-        isCloudBaseEnabled: isCloudBaseConfigured()
+        isSupabaseEnabled: isSupabaseConfigured()
       })
     } catch (error: unknown) {
       console.error('Logout failed:', error)

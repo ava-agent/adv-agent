@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { ResponsiveLayout } from './components/ResponsiveLayout'
 import { OfflineIndicator } from './components/OfflineIndicator'
 import { LoadingState } from './components/LoadingState'
+import { AIAssistant } from './components/AIAssistant'
 import './App.css'
 import './components/ResponsiveLayout.css'
 
@@ -82,6 +83,7 @@ function App() {
           </Routes>
         </Suspense>
       </ResponsiveLayout>
+      <AIAssistant />
     </>
   )
 }

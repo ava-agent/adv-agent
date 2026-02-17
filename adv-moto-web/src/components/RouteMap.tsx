@@ -34,86 +34,25 @@ export function RouteMap({ coordinates, difficultyLevel, height = '400px' }: Rou
     const centerLon = coordinates[0][0]
     const centerLat = coordinates[0][1]
 
-    // Create map instance
+    // Create map instance with valid style (layers must be an array, not object)
     const mapInstance = new maplibregl.Map({
       container: mapContainer.current,
       style: {
         version: 8,
         sources: {},
-        layers: {}
+        layers: []
       } as maplibregl.StyleSpecification,
       center: [centerLon, centerLat],
       zoom: 10,
       attributionControl: false
     } as maplibregl.MapOptions)
 
-    // Add OSM tile source
-    mapInstance.addSource('osm-tiles', {
-      type: 'raster',
-      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-      tileSize: 256,
-      attribution: '&copy; OpenStreetMap contributors'
-    })
+    map.current = mapInstance
 
-    // Add OSM tile layer
-    mapInstance.addLayer({
-      id: 'osm-tiles',
-      type: 'raster',
-      source: 'osm-tiles',
-      minzoom: 0,
-      maxzoom: 19
-    })
-
-    // Add route source (GeoJSON)
-    mapInstance.addSource('route', {
-      type: 'geojson',
-      data: {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'LineString',
-          coordinates: coordinates
-        }
-      }
-    })
-
-    // Add route line layer
-    mapInstance.addLayer({
-      id: 'route-line',
-      type: 'line',
-      source: 'route',
-      layout: {
-        'line-join': 'round',
-        'line-cap': 'round'
-      },
-      paint: {
-        'line-color': difficultyColors[difficultyLevel] || '#ff6b35',
-        'line-width': 4,
-        'line-opacity': 0.8
-      }
-    })
-
-    // Add route outline (for better visibility)
-    mapInstance.addLayer({
-      id: 'route-outline',
-      type: 'line',
-      source: 'route',
-      layout: {
-        'line-join': 'round',
-        'line-cap': 'round'
-      },
-      paint: {
-        'line-color': '#ffffff',
-        'line-width': 6,
-        'line-opacity': 0.3
-      }
-    }, 'osm-tiles') // Add below tiles
-
-    // Create start and end markers
+    // Create marker elements before the load event
     const startPoint = coordinates[0]
     const endPoint = coordinates[coordinates.length - 1]
 
-    // Create start marker element
     const startMarker = document.createElement('div')
     startMarker.className = 'map-marker'
     startMarker.style.cssText = `
@@ -131,7 +70,6 @@ export function RouteMap({ coordinates, difficultyLevel, height = '400px' }: Rou
     `
     startMarker.innerHTML = '起'
 
-    // Create end marker element
     const endMarker = document.createElement('div')
     endMarker.className = 'map-marker'
     endMarker.style.cssText = `
@@ -149,31 +87,95 @@ export function RouteMap({ coordinates, difficultyLevel, height = '400px' }: Rou
     `
     endMarker.innerHTML = '终'
 
-    // Add markers to map
-    new maplibregl.Marker({ element: startMarker })
-      .setLngLat({ lon: startPoint[0], lat: startPoint[1] })
-      .addTo(mapInstance)
+    // All source/layer additions MUST happen inside the 'load' event to avoid
+    // "Style is not done loading" error (race condition with async style loading)
+    mapInstance.on('load', () => {
+      // Add OSM tile source
+      mapInstance.addSource('osm-tiles', {
+        type: 'raster',
+        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+        tileSize: 256,
+        attribution: '&copy; OpenStreetMap contributors'
+      })
 
-    new maplibregl.Marker({ element: endMarker })
-      .setLngLat({ lon: endPoint[0], lat: endPoint[1] })
-      .addTo(mapInstance)
+      // Add OSM tile layer
+      mapInstance.addLayer({
+        id: 'osm-tiles',
+        type: 'raster',
+        source: 'osm-tiles',
+        minzoom: 0,
+        maxzoom: 19
+      })
 
-    // Fit map to show entire route
-    const bounds = coordinates.reduce((bounds, coord) => {
-      return bounds.extend([coord[0], coord[1]])
-    }, new maplibregl.LngLatBounds())
+      // Add route source (GeoJSON)
+      mapInstance.addSource('route', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: coordinates
+          }
+        }
+      })
 
-    mapInstance.fitBounds(bounds, {
-      padding: {
-        top: 60,
-        bottom: 60,
-        left: 60,
-        right: 60
-      },
-      maxZoom: 14
+      // Add route outline for better visibility (below the main line)
+      mapInstance.addLayer({
+        id: 'route-outline',
+        type: 'line',
+        source: 'route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#ffffff',
+          'line-width': 6,
+          'line-opacity': 0.3
+        }
+      })
+
+      // Add route line layer
+      mapInstance.addLayer({
+        id: 'route-line',
+        type: 'line',
+        source: 'route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': difficultyColors[difficultyLevel] || '#ff6b35',
+          'line-width': 4,
+          'line-opacity': 0.8
+        }
+      })
+
+      // Add start and end markers
+      new maplibregl.Marker({ element: startMarker })
+        .setLngLat({ lon: startPoint[0], lat: startPoint[1] })
+        .addTo(mapInstance)
+
+      new maplibregl.Marker({ element: endMarker })
+        .setLngLat({ lon: endPoint[0], lat: endPoint[1] })
+        .addTo(mapInstance)
+
+      // Fit map to show entire route
+      const bounds = coordinates.reduce((acc, coord) => {
+        return acc.extend([coord[0], coord[1]])
+      }, new maplibregl.LngLatBounds())
+
+      mapInstance.fitBounds(bounds, {
+        padding: {
+          top: 60,
+          bottom: 60,
+          left: 60,
+          right: 60
+        },
+        maxZoom: 14
+      })
     })
-
-    map.current = mapInstance
 
     // Cleanup
     return () => {
