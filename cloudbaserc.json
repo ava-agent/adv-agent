@@ -1,0 +1,168 @@
+{
+  "$schema": "https://framework-1258016615.tcloudbaseapp.com/schema/latest.json",
+  "version": "2.0",
+  "framework": {
+    "name": "adv-moto-hub",
+    "plugins": {
+      "client": {
+        "use": "@cloudbase/framework-plugin-website",
+        "inputs": {
+          "buildCommand": "npm run build",
+          "outputPath": "adv-moto-web/dist"
+        }
+      },
+      "server": {
+        "use": "@cloudbase/framework-plugin-function",
+        "inputs": {
+          "functions": [
+            {
+              "name": "route-list",
+              "timeout": 60,
+              "memorySize": 256,
+              "runtime": "Nodejs16.13",
+              "handler": "index.main",
+              "path": "cloudfunctions/route-list"
+            },
+            {
+              "name": "route-detail",
+              "timeout": 60,
+              "memorySize": 256,
+              "runtime": "Nodejs16.13",
+              "handler": "index.main",
+              "path": "cloudfunctions/route-detail"
+            },
+            {
+              "name": "route-create",
+              "timeout": 120,
+              "memorySize": 512,
+              "runtime": "Nodejs16.13",
+              "handler": "index.main",
+              "path": "cloudfunctions/route-create"
+            },
+            {
+              "name": "review-create",
+              "timeout": 60,
+              "memorySize": 256,
+              "runtime": "Nodejs16.13",
+              "handler": "index.main",
+              "path": "cloudfunctions/review-create"
+            },
+            {
+              "name": "user-login",
+              "timeout": 60,
+              "memorySize": 256,
+              "runtime": "Nodejs16.13",
+              "handler": "index.main",
+              "path": "cloudfunctions/user-login"
+            },
+            {
+              "name": "user-update",
+              "timeout": 60,
+              "memorySize": 256,
+              "runtime": "Nodejs16.13",
+              "handler": "index.main",
+              "path": "cloudfunctions/user-update"
+            }
+          ]
+        }
+      },
+      "database": {
+        "use": "@cloudbase/framework-plugin-database",
+        "inputs": {
+          "collections": [
+            {
+              "name": "routes",
+              "description": "Motorcycle routes data",
+              "indexes": [
+                {
+                  "name": "idx_difficulty",
+                  "fields": [
+                    { "field": "difficultyLevel", "order": "1" }
+                  ]
+                },
+                {
+                  "name": "idx_createdAt",
+                  "fields": [
+                    { "field": "createdAt", "order": "-1" }
+                  ]
+                },
+                {
+                  "name": "idx_startPoint",
+                  "fields": [
+                    { "field": "startPoint.lat", "order": "1" },
+                    { "field": "startPoint.lon", "order": "1" }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "reviews",
+              "description": "Route reviews",
+              "indexes": [
+                {
+                  "name": "idx_routeId",
+                  "fields": [
+                    { "field": "routeId", "order": "1" }
+                  ]
+                },
+                {
+                  "name": "idx_createdAt",
+                  "fields": [
+                    { "field": "createdAt", "order": "-1" }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "users",
+              "description": "User profiles",
+              "indexes": [
+                {
+                  "name": "idx_openid",
+                  "fields": [
+                    { "field": "_openid", "order": "1" }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "storage": {
+        "use": "@cloudbase/framework-plugin-hosting",
+        "inputs": {
+          "storageRules": [
+            {
+              "action": "allow",
+              "auth": "anonymous",
+              "path": "/gpx-files/*",
+              "methods": ["GET"]
+            },
+            {
+              "action": "allow",
+              "auth": "authenticated",
+              "path": "/gpx-files/*",
+              "methods": ["POST", "PUT", "DELETE"]
+            },
+            {
+              "action": "allow",
+              "auth": "anonymous",
+              "path": "/route-images/*",
+              "methods": ["GET"]
+            },
+            {
+              "action": "allow",
+              "auth": "authenticated",
+              "path": "/route-images/*",
+              "methods": ["POST", "PUT", "DELETE"]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "env": {
+    "regions": ["ap-shanghai"],
+    "envId": "ai-native-2gknzsob14f42138"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "route-create",
+  "version": "1.0.0",
+  "description": "创建路线云函数",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest",
+    "xml2js": "^0.6.2"
+  }
+}

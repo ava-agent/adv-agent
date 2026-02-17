@@ -1,0 +1,14 @@
+{
+  "routes": {
+    "read": true,
+    "write": false
+  },
+  "reviews": {
+    "read": true,
+    "write": "auth.uid != null"
+  },
+  "users": {
+    "read": "auth.uid != null && doc._openid == auth.openid",
+    "write": "auth.uid != null && doc._openid == auth.openid"
+  }
+}

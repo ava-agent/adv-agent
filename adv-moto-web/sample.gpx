@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="ADV Moto Hub" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>北京延庆穿越线</name>
+    <desc>经典的ADV穿越路线，途经多个风景优美的山谷和河流</desc>
+    <time>2024-01-15T08:00:00Z</time>
+  </metadata>
+  <trk>
+    <name>主路线</name>
+    <trkseg>
+      <trkpt lat="40.5000" lon="116.2000">
+        <ele>500</ele>
+        <time>2024-01-15T08:00:00Z</time>
+      </trkpt>
+      <trkpt lat="40.5200" lon="116.2200">
+        <ele>520</ele>
+        <time>2024-01-15T08:10:00Z</time>
+      </trkpt>
+      <trkpt lat="40.5500" lon="116.2500">
+        <ele>580</ele>
+        <time>2024-01-15T08:20:00Z</time>
+      </trkpt>
+      <trkpt lat="40.5800" lon="116.2800">
+        <ele>650</ele>
+        <time>2024-01-15T08:30:00Z</time>
+      </trkpt>
+      <trkpt lat="40.6000" lon="116.3000">
+        <ele>680</ele>
+        <time>2024-01-15T08:40:00Z</time>
+      </trkpt>
+      <trkpt lat="40.5800" lon="116.3200">
+        <ele>620</ele>
+        <time>2024-01-15T08:50:00Z</time>
+      </trkpt>
+      <trkpt lat="40.5600" lon="116.3500">
+        <ele>580</ele>
+        <time>2024-01-15T09:00:00Z</time>
+      </trkpt>
+      <trkpt lat="40.5400" lon="116.3800">
+        <ele>550</ele>
+        <time>2024-01-15T09:10:00Z</time>
+      </trkpt>
+      <trkpt lat="40.5200" lon="116.4000">
+        <ele>500</ele>
+        <time>2024-01-15T09:20:00Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>
