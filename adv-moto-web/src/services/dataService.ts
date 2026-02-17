@@ -11,7 +11,6 @@ import type { User, Route, Review } from '../types'
 import { showToast } from '../utils/storage'
 import {
   isSupabaseConfigured,
-  getSupabaseClient,
   signInAnonymouslySupabase,
   getSupabaseSession,
   getRoutesFromSupabase,
@@ -397,23 +396,15 @@ export class DataService {
       elevationGainM: r.elevationGainM
     }))
 
-    if (isSupabaseConfigured() && this.isOnline) {
+    if (this.isOnline) {
       try {
-        const client = getSupabaseClient()
-
         if (onChunk) {
-          // Streaming mode
-          const response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-route-recommend`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-              },
-              body: JSON.stringify({ query, routes: routeSummaries, stream: true })
-            }
-          )
+          // Streaming via Vercel serverless function
+          const response = await fetch('/api/ai', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, routes: routeSummaries, stream: true })
+          })
 
           if (response.ok && response.body) {
             const reader = response.body.getReader()
@@ -428,15 +419,17 @@ export class DataService {
               onChunk(chunk)
             }
 
-            // Extract route IDs from the response
             const routeIds = this.extractRouteIdsFromText(fullText, routes)
             return { routeIds, message: fullText }
           }
         } else {
-          const { data, error } = await client.functions.invoke('ai-route-recommend', {
-            body: { query, routes: routeSummaries }
+          const response = await fetch('/api/ai', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, routes: routeSummaries })
           })
-          if (!error && data) {
+          if (response.ok) {
+            const data = await response.json()
             return { routeIds: data.routeIds || [], message: data.message || '' }
           }
         }

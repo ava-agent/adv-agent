@@ -16,7 +16,7 @@ export default defineConfig({
         manualChunks: {
           'maplibre': ['maplibre-gl'],
           'antd-mobile': ['antd-mobile'],
-          'cloudbase': ['@cloudbase/js-sdk'],
+          'supabase': ['@supabase/supabase-js'],
         }
       }
     }
